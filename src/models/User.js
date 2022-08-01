@@ -14,6 +14,10 @@ const User = sequelize.define(
       allowNull: false,
       unique: true
     },
+    cpfcnpj: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING(200),
       allowNull: false

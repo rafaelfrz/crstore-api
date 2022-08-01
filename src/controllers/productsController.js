@@ -1,4 +1,4 @@
-import Item from "../models/Item";
+import Product from "../models/Product";
 
 const get = (req, res) => {
   res.send({

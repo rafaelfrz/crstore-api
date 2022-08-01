@@ -1,9 +1,9 @@
 import usersRoute from "./usersRoute";
-import itemsRoute from "./itemsRoute";
+import productsRoute from "./productsRoute";
 
 function Routes(app) {
 	usersRoute(app);
-	itemsRoute(app);
+	productsRoute(app);
 }
 
 export default Routes;

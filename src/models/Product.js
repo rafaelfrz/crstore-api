@@ -1,8 +1,9 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config";
+import Category from "./Category";
 
-const Item = sequelize.define(
-  'items',
+const Product = sequelize.define(
+  'products',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -26,4 +27,13 @@ const Item = sequelize.define(
   }
 );
 
-export default Item;
+Product.belongsTo(Category, {
+  as: 'category',
+  foreignKey: {
+    name: 'idCategory',
+    allowNull: false,
+    field: 'id_category'
+  }
+})
+
+export default Product;

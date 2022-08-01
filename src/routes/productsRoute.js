@@ -1,4 +1,4 @@
-import controller from '../controllers/itemsController'
+import controller from '../controllers/productsController'
 import Authenticate from '../utils/Authenticate'
 
 export default (app) => {
