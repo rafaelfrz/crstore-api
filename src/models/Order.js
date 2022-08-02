@@ -12,8 +12,8 @@ const Order = sequelize.define(
       autoIncrement: true
     },
     status: {
-        type: DataTypes.STRING(40),
-        allowNull: false,
+      type: DataTypes.STRING(40),
+      allowNull: false,
     }
   },
   {
@@ -25,21 +25,25 @@ const Order = sequelize.define(
 );
 
 Order.belongsTo(Payment, {
-    as: 'payment',
-    foreignKey: {
-        name: 'idPayment',
-        allowNull: false,
-        field: 'id_payment'
-    }
+  as: 'payment',
+  onDelete: 'NO ACTION',
+  onUpdate: 'NO ACTION',
+  foreignKey: {
+    name: 'idPayment',
+    allowNull: false,
+    field: 'id_payment'
+  }
 }),
 
-Order.belongsTo(User, {
+  Order.belongsTo(User, {
     as: 'user',
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
     foreignKey: {
-        name: 'idUser',
-        allowNull: false,
-        field: 'id_user'
+      name: 'idUser',
+      allowNull: false,
+      field: 'id_user'
     }
-    })
+  })
 
 export default Order;

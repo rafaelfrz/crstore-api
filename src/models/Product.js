@@ -29,6 +29,8 @@ const Product = sequelize.define(
 
 Product.belongsTo(Category, {
   as: 'category',
+  onDelete: 'NO ACTION',
+  onUpdate: 'NO ACTION',
   foreignKey: {
     name: 'idCategory',
     allowNull: false,

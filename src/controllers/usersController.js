@@ -2,28 +2,47 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const getAll = async (req, res) => {
+const get = async (req, res) => {
   try {
-    const response = await User.findAll({
-      order: [['id', 'ASC']]
+    let { id } = req.params;
+
+    id = id ? id.toString().replace(/\D/g, '') : null;
+    if (!id) {
+      const response = await User.findAll({
+        order: [['id', 'ASC']]
+      });
+      return res.status(200).send({
+        type: 'success', // success, error, warning, info
+        message: 'Registros recuperados com sucesso', // mensagem para o front exibir
+        data: response // json com informações de resposta
+      });
+    }
+
+    let user = await User.findOne({
+      where: {
+        id
+      },
     });
-    return res.status(200).send({
-      type: 'success', // success, error, warning, info
-      message: 'Registros recuperados com sucesso', // mensagem para o front exibir
-      data: response // json com informações de resposta
-    });
+
+    if (!user) {
+      return res.status(400).send({
+        type: 'error',
+        message: `Não foi encontrado usuário com o ID ${id}`,
+      });
+    }
+    return res.status(200).send(user);
   } catch (error) {
     return res.status(200).send({
       type: 'error',
       message: 'Ops! Ocorreu um erro!',
-      data: error
+      data: error.message
     });
   }
 }
 
 const register = async (req, res) => {
   try {
-    let { username, name, phone, password, role } = req.body;
+    let { username, name, cpfcnpj, phone, password, role } = req.body;
 
     let userExists = await User.findOne({
       where: {
@@ -43,6 +62,7 @@ const register = async (req, res) => {
     let response = await User.create({
       username,
       name,
+      cpfcnpj,
       phone,
       passwordHash,
       role
@@ -103,7 +123,7 @@ const login = async (req, res) => {
 }
 
 export default {
-  getAll,
+  get,
   register,
   login
 }
