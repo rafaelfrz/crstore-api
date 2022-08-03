@@ -1,15 +1,29 @@
+import { response } from "express";
 import Order from "../models/Order";
+import OrderProduct from "../models/OrderProduct"
+import usersController from "./usersController"
 
 const get = async (req, res) => {
     try {
-        let id = req.params;
+        let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
 
-        id = id ? id.toString().replace(/\D/g, '') : null;
-        if (!id) {
-            const response = await Order.findAll({
-                order: [['id', 'ASC']],
-                include: ['user', 'payment', 'status']
+        let user = await usersController.getUserByToken(req.headers.authorizantion);
+
+        if (!user) {
+            return res.status(200).send({
+                type: 'error',
+                message: 'Ocorreu um erro ao recuperar os seus dados'
             });
+        };
+
+        if (!id) {
+            let orders = await Order.findAll({ where: { idUser: user.id } });
+            let response = [];
+            for (let order of orders) {
+                let orderProduct = await order.getItems();
+                order.items = orderProduct;
+                response.push(order);
+            }
             return res.status(200).send({
                 type: 'success', // success, error, warning, info
                 message: 'Registros recuperados com sucesso', // mensagem para o front exibir
@@ -58,56 +72,46 @@ const persist = async (req, res) => {
     }
 }
 
-const create = async (dados, res) => {
-    let { idUser, idPayment, idStatus } = dados;
+const create = async (req, res) => {
+    try {
+        let user = await usersController.getUserByToken(req.headers.authorization);
 
-    // let addressExists = await Order.findOne({
-    //     where: {
-    //         name
-    //     }
-    // });
-
-    // if (addressExists) {
-    //     return res.status(200).send({
-    //         type: 'error',
-    //         message: `Já existe um endereço com esse CEP, ID ${addressExists.id}`
-    //     })
-    // }
-
-    let order = await Order.create({
-        idUser,
-        idPayment,
-        idStatus
-    });
-    return res.status(200).send({
-        type: 'success',
-        message: `Categoria cadastrada com sucesso`,
-        data: order
-    });
-}
-
-const update = async (id, dados, res) => {
-    let order = await Order.findOne({
-        where: {
-            id
+        if (!user) {
+            return res.status(200).send({
+                type: 'error',
+                message: 'Ocorreu um erro ao recuperar os seus dados'
+            })
         }
-    });
 
-    if (!order) {
+        let { idUser, idPayment, idStatus, products, total } = req.body;
+
+        let response = await Order.create({
+            idUser : user.id,
+            idPayment,
+            idStatus,
+        });
+
+        for (const product of products) {
+            await OrderProduct.create({
+                idOrder: response.id,
+                idProduct: products.idProducts,
+                price: products.price,
+
+            })
+        }
+
+        return res.status(200).send({
+            type: 'success',
+            message: `Categoria cadastrada com sucesso`,
+            data: order
+        });
+    } catch (error) {
         return res.status(200).send({
             type: 'error',
-            message: `Não foi encontrada categoria com o ID ${id}`
+            message: 'Ops! Ocorreu algum erro!',
+            data: error.message
         })
     }
-
-    Object.keys(dados).forEach(field => order[field] = dados[field]);
-
-    await order.save();
-    return res.status(200).send({
-        type: 'success',
-        message: `Categoria ${id} foi atualizada com sucesso`,
-        data: order
-    });
 }
 
 const destroy = async (req, res) => {
@@ -119,6 +123,8 @@ const destroy = async (req, res) => {
                 type: 'error',
                 message: 'Informe um ID válido para deletar a categoria'
             });
+
+
         }
         let order = await Order.findOne({
             where: {
@@ -134,7 +140,7 @@ const destroy = async (req, res) => {
         }
 
         await order.destroy();
-        return res.status(200).send ({
+        return res.status(200).send({
             type: 'success',
             message: 'Categoria deleteada com sucesso',
             data: order

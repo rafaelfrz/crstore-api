@@ -5,6 +5,6 @@ export default (app) => {
 	app.post('/products/destroy', controller.destroy)
 	app.get('/products', controller.get)
 	app.get('/products/:id', controller.get)
-	app.post('/products/persist', controller.persist)
-	app.post('/products/persist/:id', controller.persist)
+	app.post('/products/', controller.persist)
+	app.post('/products/:id', controller.persist)
 }

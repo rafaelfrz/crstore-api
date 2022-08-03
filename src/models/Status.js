@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../config";
 
 const Status = sequelize.define(
-  'order_status',
+  'status',
   {
     id: {
       type: DataTypes.INTEGER,

@@ -44,7 +44,7 @@ Order.belongsTo(Payment, {
   }),
 
   Order.belongsTo(Status, {
-    as: 'order_status',
+    as: 'status',
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
     foreignKey: {

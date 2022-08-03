@@ -24,7 +24,7 @@ const get = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(400).send({
+            return res.status(200).send({
                 type: 'error',
                 message: `Não foi encontrado categoria com o ID ${id}`,
             });
@@ -46,59 +46,46 @@ const persist = async (req, res) => {
         let user = await usersController.getUserByToken(req.headers.authorization);
 
         if (!user) {
-            return res.status(200).send ({
+            return res.status(200).send({
                 type: 'error',
-                mesage: 'Ops! ocorreu um erro',
-                data: error.message
+                mesage: 'Esse usuário não existe!',
             })
         }
 
         if (!id) {
+
+            console.log(`chegou`);
             return await create(req.body, res)
         }
-
         return await update(id, req.body, res)
     } catch (error) {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
 
 const create = async (dados, res) => {
-    let { city, abbreviation, zip_code, street, idUser } = dados;
-
-    // let addressExists = await Address.findOne({
-    //     where: {
-    //         name
-    //     }
-    // });
-
-    // if (addressExists) {
-    //     return res.status(200).send({
-    //         type: 'error',
-    //         message: `Já existe um endereço com esse CEP, ID ${addressExists.id}`
-    //     })
-    // }
+    let { city, disctrict, abbreviation, zipCode, street, idUser } = dados;
 
     let address = await Address.create({
-        idUser: user.id,
+        idUser,
+        disctrict,
         city,
         abbreviation,
-        zip_code,
+        zipCode,
         street,
-        idUser
     });
     return res.status(200).send({
         type: 'success',
-        message: `Categoria cadastrada com sucesso`,
+        message: `Endereço cadastrado com sucesso`,
         data: address
     });
 }
 
-const update = async (id, dados, res) => { 
+const update = async (id, dados, res) => {
     let address = await Address.findOne({
         where: {
             id
@@ -146,7 +133,7 @@ const destroy = async (req, res) => {
         }
 
         await address.destroy();
-        return res.status(200).send ({
+        return res.status(200).send({
             type: 'success',
             message: 'Categoria deleteada com sucesso',
             data: address

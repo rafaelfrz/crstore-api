@@ -16,19 +16,19 @@ const get = async (req, res) => {
             });
         }
 
-        let user = await Status.findOne({
+        let status = await Status.findOne({
             where: {
                 id
             },
         });
 
-        if (!user) {
-            return res.status(400).send({
+        if (!status) {
+            return res.status(200).send({
                 type: 'error',
-                message: `Não foi encontrado categoria com o ID ${id}`,
+                message: `Não foi encontrado status com o ID ${id}`,
             });
         }
-        return res.status(200).send(user);
+        return res.status(200).send(status);
     } catch (error) {
         return res.status(200).send({
             type: 'error',
@@ -40,19 +40,9 @@ const get = async (req, res) => {
 
 const persist = async (req, res) => {
     try {
-        let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
+        let { status } = req.params;
 
-        let user = await usersController.getUserByToken(req.headers.authorization);
-
-        if (!user) {
-            return res.status(200).send ({
-                type: 'error',
-                mesage: 'Ops! ocorreu um erro',
-                data: error.message
-            })
-        }
-
-        if (!id) {
+        if (!status) {
             return await create(req.body, res)
         }
 
@@ -60,8 +50,8 @@ const persist = async (req, res) => {
     } catch (error) {
         return res.status(200).send({
             type: 'error',
-            message: 'Ops! Ocorreu um erro!',
-            data: error
+            message: 'Aqui!',
+            data: error.message
         });
     }
 }
@@ -69,26 +59,26 @@ const persist = async (req, res) => {
 const create = async (dados, res) => {
     let { status } = dados;
 
-    // let addressExists = await Status.findOne({
-    //     where: {
-    //         name
-    //     }
-    // });
+    let statusExist = await Status.findOne({
+        where: {
+            status
+        }
+    });
 
-    // if (addressExists) {
-    //     return res.status(200).send({
-    //         type: 'error',
-    //         message: `Já existe um endereço com esse CEP, ID ${addressExists.id}`
-    //     })
-    // }
+    if (statusExist) {
+        return res.status(200).send({
+            type: 'error',
+            message: `Esse status já foi cadastrado, ID ${addressExists.id}`
+        })
+    }
 
-    let statuss = await Status.create({
+    let createdStatus = await Status.create({
         status
     });
     return res.status(200).send({
         type: 'success',
-        message: `Categoria cadastrada com sucesso`,
-        data: statuss
+        message: `Status cadastrado com sucesso`,
+        data: createdStatus
     });
 }
 

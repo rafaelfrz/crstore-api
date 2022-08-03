@@ -54,7 +54,7 @@ const getUserByToken = async (authorization) => {
 
   let user = await User.findOne({
     where: {
-      id: decodedToken.idUser
+      id: decodedToken.userId 
     }
   })
 
@@ -149,6 +149,7 @@ const login = async (req, res) => {
 
 export default {
   get,
+  getUserByToken,
   register,
   login
 }
