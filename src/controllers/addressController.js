@@ -1,4 +1,5 @@
 import Address from "../models/Address";
+import usersController from "./usersController";
 
 const get = async (req, res) => {
     try {
@@ -40,7 +41,17 @@ const get = async (req, res) => {
 
 const persist = async (req, res) => {
     try {
-        let { id } = req.params;
+        let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
+
+        let user = await usersController.getUserByToken(req.headers.authorization);
+
+        if (!user) {
+            return res.status(200).send ({
+                type: 'error',
+                mesage: 'Ops! ocorreu um erro',
+                data: error.message
+            })
+        }
 
         if (!id) {
             return await create(req.body, res)
@@ -73,6 +84,7 @@ const create = async (dados, res) => {
     // }
 
     let address = await Address.create({
+        idUser: user.id,
         city,
         abbreviation,
         zip_code,
@@ -86,7 +98,7 @@ const create = async (dados, res) => {
     });
 }
 
-const update = async (id, dados, res) => {
+const update = async (id, dados, res) => { 
     let address = await Address.findOne({
         where: {
             id

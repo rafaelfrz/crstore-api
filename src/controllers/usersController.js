@@ -40,6 +40,31 @@ const get = async (req, res) => {
   }
 }
 
+const getUserByToken = async (authorization) => {
+  if (!authorization) {
+    return null;
+  }
+
+  const token = authorization.split(' ')[1] || null;
+  const decodedToken = jwt.decode(token);
+
+  if (!decodedToken) {
+    return null;
+  }
+
+  let user = await User.findOne({
+    where: {
+      id: decodedToken.idUser
+    }
+  })
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
+}
+
 const register = async (req, res) => {
   try {
     let { username, name, cpfcnpj, phone, password, role } = req.body;
@@ -100,7 +125,7 @@ const login = async (req, res) => {
     }
 
     let token = jwt.sign(
-      { userId: user.id, username: user.username }, //payload - dados utilizados na criacao do token
+      { userId: user.id, username: user.username, role: user.role }, //payload - dados utilizados na criacao do token
       process.env.TOKEN_KEY, //chave PRIVADA da aplicação 
       { expiresIn: '1h' } //options ... em quanto tempo ele expira...
     );

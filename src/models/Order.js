@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../config";
 import Payment from "./Payment";
 import User from "./User";
+import Status from "./Status";
 
 const Order = sequelize.define(
   'orders',
@@ -10,10 +11,6 @@ const Order = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
-    },
-    status: {
-      type: DataTypes.STRING(40),
-      allowNull: false,
     }
   },
   {
@@ -44,6 +41,19 @@ Order.belongsTo(Payment, {
       allowNull: false,
       field: 'id_user'
     }
+  }),
+
+  Order.belongsTo(Status, {
+    as: 'order_status',
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+    foreignKey: {
+      name: 'idStatus',
+      allowNull: false,
+      field: 'id_status'
+    }
   })
+
+
 
 export default Order;

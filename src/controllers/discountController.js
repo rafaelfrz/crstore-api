@@ -1,4 +1,4 @@
-import Address from "../models/Address";
+import Discount from "../models/Discount";
 
 const get = async (req, res) => {
     try {
@@ -6,7 +6,7 @@ const get = async (req, res) => {
 
         id = id ? id.toString().replace(/\D/g, '') : null;
         if (!id) {
-            const response = await Address.findAll({
+            const response = await Discount.findAll({
                 order: [['id', 'ASC']]
             });
             return res.status(200).send({
@@ -16,7 +16,7 @@ const get = async (req, res) => {
             });
         }
 
-        let user = await Address.findOne({
+        let user = await Discount.findOne({
             where: {
                 id
             },
@@ -25,7 +25,7 @@ const get = async (req, res) => {
         if (!user) {
             return res.status(400).send({
                 type: 'error',
-                message: `Não foi encontrado categoria com o ID ${id}`,
+                message: `Não foi encontrado cupom de desconto com o ID ${id}`,
             });
         }
         return res.status(200).send(user);
@@ -57,9 +57,9 @@ const persist = async (req, res) => {
 }
 
 const create = async (dados, res) => {
-    let { city, abbreviation, zip_code, street, idUser } = dados;
+    let { discount_type, discount, period, uses } = dados;
 
-    // let addressExists = await Address.findOne({
+    // let addressExists = await Discount.findOne({
     //     where: {
     //         name
     //     }
@@ -72,41 +72,40 @@ const create = async (dados, res) => {
     //     })
     // }
 
-    let address = await Address.create({
-        city,
-        abbreviation,
-        zip_code,
-        street,
-        idUser
+    let discountt = await Discount.create({
+        discount_type,
+        discount,
+        period,
+        uses
     });
     return res.status(200).send({
         type: 'success',
         message: `Categoria cadastrada com sucesso`,
-        data: address
+        data: discountt
     });
 }
 
 const update = async (id, dados, res) => {
-    let address = await Address.findOne({
+    let discount = await Discount.findOne({
         where: {
             id
         }
     });
 
-    if (!address) {
+    if (!discount) {
         return res.status(200).send({
             type: 'error',
             message: `Não foi encontrada categoria com o ID ${id}`
         })
     }
 
-    Object.keys(dados).forEach(field => address[field] = dados[field]);
+    Object.keys(dados).forEach(field => discount[field] = dados[field]);
 
-    await address.save();
+    await discount.save();
     return res.status(200).send({
         type: 'success',
         message: `Categoria ${id} foi atualizada com sucesso`,
-        data: address
+        data: discount
     });
 }
 
@@ -120,24 +119,24 @@ const destroy = async (req, res) => {
                 message: 'Informe um ID válido para deletar a categoria'
             });
         }
-        let address = await Address.findOne({
+        let discount = await Discount.findOne({
             where: {
                 id
             }
         });
 
-        if (!address) {
+        if (!discount) {
             return res.status(200).send({
                 type: 'error',
                 message: `Não foi encontrado uma categoria com o ID ${id}`
             })
         }
 
-        await address.destroy();
-        return res.status(200).send ({
+        await discount.destroy();
+        return res.status(200).send({
             type: 'success',
             message: 'Categoria deleteada com sucesso',
-            data: address
+            data: discount
         })
     } catch (error) {
         return res.status(200).send({

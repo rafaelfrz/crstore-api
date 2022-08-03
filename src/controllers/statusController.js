@@ -1,14 +1,13 @@
-import Order from "../models/Order";
+import Status from "../models/Status";
 
 const get = async (req, res) => {
     try {
-        let id = req.params;
+        let { id } = req.params;
 
         id = id ? id.toString().replace(/\D/g, '') : null;
         if (!id) {
-            const response = await Order.findAll({
-                order: [['id', 'ASC']],
-                include: ['user', 'payment', 'status']
+            const response = await Status.findAll({
+                order: [['id', 'ASC']]
             });
             return res.status(200).send({
                 type: 'success', // success, error, warning, info
@@ -17,20 +16,19 @@ const get = async (req, res) => {
             });
         }
 
-        let order = await Order.findOne({
+        let user = await Status.findOne({
             where: {
                 id
             },
-            include: ['user', 'payment', 'status']
         });
 
-        if (!order) {
+        if (!user) {
             return res.status(400).send({
                 type: 'error',
                 message: `Não foi encontrado categoria com o ID ${id}`,
             });
         }
-        return res.status(200).send(order);
+        return res.status(200).send(user);
     } catch (error) {
         return res.status(200).send({
             type: 'error',
@@ -42,7 +40,17 @@ const get = async (req, res) => {
 
 const persist = async (req, res) => {
     try {
-        let { id } = req.params;
+        let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
+
+        let user = await usersController.getUserByToken(req.headers.authorization);
+
+        if (!user) {
+            return res.status(200).send ({
+                type: 'error',
+                mesage: 'Ops! ocorreu um erro',
+                data: error.message
+            })
+        }
 
         if (!id) {
             return await create(req.body, res)
@@ -59,9 +67,9 @@ const persist = async (req, res) => {
 }
 
 const create = async (dados, res) => {
-    let { idUser, idPayment, idStatus } = dados;
+    let { status } = dados;
 
-    // let addressExists = await Order.findOne({
+    // let addressExists = await Status.findOne({
     //     where: {
     //         name
     //     }
@@ -74,39 +82,37 @@ const create = async (dados, res) => {
     //     })
     // }
 
-    let order = await Order.create({
-        idUser,
-        idPayment,
-        idStatus
+    let statuss = await Status.create({
+        status
     });
     return res.status(200).send({
         type: 'success',
         message: `Categoria cadastrada com sucesso`,
-        data: order
+        data: statuss
     });
 }
 
-const update = async (id, dados, res) => {
-    let order = await Order.findOne({
+const update = async (id, dados, res) => { 
+    let status = await Status.findOne({
         where: {
             id
         }
     });
 
-    if (!order) {
+    if (!status) {
         return res.status(200).send({
             type: 'error',
             message: `Não foi encontrada categoria com o ID ${id}`
         })
     }
 
-    Object.keys(dados).forEach(field => order[field] = dados[field]);
+    Object.keys(dados).forEach(field => status[field] = dados[field]);
 
-    await order.save();
+    await status.save();
     return res.status(200).send({
         type: 'success',
         message: `Categoria ${id} foi atualizada com sucesso`,
-        data: order
+        data: status
     });
 }
 
@@ -120,24 +126,24 @@ const destroy = async (req, res) => {
                 message: 'Informe um ID válido para deletar a categoria'
             });
         }
-        let order = await Order.findOne({
+        let status = await Status.findOne({
             where: {
                 id
             }
         });
 
-        if (!order) {
+        if (!status) {
             return res.status(200).send({
                 type: 'error',
                 message: `Não foi encontrado uma categoria com o ID ${id}`
             })
         }
 
-        await order.destroy();
+        await status.destroy();
         return res.status(200).send ({
             type: 'success',
             message: 'Categoria deleteada com sucesso',
-            data: order
+            data: status
         })
     } catch (error) {
         return res.status(200).send({

@@ -1,4 +1,4 @@
-import Address from "../models/Address";
+import Payment from "../models/Payment";
 
 const get = async (req, res) => {
     try {
@@ -6,7 +6,7 @@ const get = async (req, res) => {
 
         id = id ? id.toString().replace(/\D/g, '') : null;
         if (!id) {
-            const response = await Address.findAll({
+            const response = await Payment.findAll({
                 order: [['id', 'ASC']]
             });
             return res.status(200).send({
@@ -16,24 +16,24 @@ const get = async (req, res) => {
             });
         }
 
-        let user = await Address.findOne({
+        let payment = await Payment.findOne({
             where: {
                 id
             },
         });
 
-        if (!user) {
+        if (!payment) {
             return res.status(400).send({
                 type: 'error',
-                message: `Não foi encontrado categoria com o ID ${id}`,
+                message: `Não foi encontrado pagamento com o ID ${id}`,
             });
         }
-        return res.status(200).send(user);
+        return res.status(200).send(payment);
     } catch (error) {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
@@ -51,62 +51,58 @@ const persist = async (req, res) => {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
 
 const create = async (dados, res) => {
-    let { city, abbreviation, zip_code, street, idUser } = dados;
+    let { name } = dados;
 
-    // let addressExists = await Address.findOne({
-    //     where: {
-    //         name
-    //     }
-    // });
+    let paymentExists = await Payment.findOne({
+        where: {
+            name
+        }
+    });
 
-    // if (addressExists) {
-    //     return res.status(200).send({
-    //         type: 'error',
-    //         message: `Já existe um endereço com esse CEP, ID ${addressExists.id}`
-    //     })
-    // }
+    if (paymentExists) {
+        return res.status(200).send({
+            type: 'error',
+            message: `Esse tipo de pagamento já está cadastrado, ID ${paymentExists.id}`
+        })
+    }
 
-    let address = await Address.create({
-        city,
-        abbreviation,
-        zip_code,
-        street,
-        idUser
+    let payment = await Payment.create({
+        name        
     });
     return res.status(200).send({
         type: 'success',
-        message: `Categoria cadastrada com sucesso`,
-        data: address
+        message: `Tipo de pagamento cadastrado com sucesso`,
+        data: payment
     });
 }
 
 const update = async (id, dados, res) => {
-    let address = await Address.findOne({
+    let payment = await Payment.findOne({
         where: {
             id
         }
     });
 
-    if (!address) {
+    if (!payment) {
         return res.status(200).send({
             type: 'error',
             message: `Não foi encontrada categoria com o ID ${id}`
         })
     }
 
-    Object.keys(dados).forEach(field => address[field] = dados[field]);
+    Object.keys(dados).forEach(field => payment[field] = dados[field]);
 
-    await address.save();
+    await payment.save();
     return res.status(200).send({
         type: 'success',
         message: `Categoria ${id} foi atualizada com sucesso`,
-        data: address
+        data: payment
     });
 }
 
@@ -120,24 +116,24 @@ const destroy = async (req, res) => {
                 message: 'Informe um ID válido para deletar a categoria'
             });
         }
-        let address = await Address.findOne({
+        let payment = await Payment.findOne({
             where: {
                 id
             }
         });
 
-        if (!address) {
+        if (!payment) {
             return res.status(200).send({
                 type: 'error',
                 message: `Não foi encontrado uma categoria com o ID ${id}`
             })
         }
 
-        await address.destroy();
+        await payment.destroy();
         return res.status(200).send ({
             type: 'success',
             message: 'Categoria deleteada com sucesso',
-            data: address
+            data: payment
         })
     } catch (error) {
         return res.status(200).send({
