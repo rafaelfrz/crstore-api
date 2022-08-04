@@ -3,6 +3,7 @@ import { sequelize } from "../config";
 import Payment from "./Payment";
 import User from "./User";
 import Status from "./Status";
+import Address from "./Address";
 
 const Order = sequelize.define(
   'orders',
@@ -51,6 +52,16 @@ Order.belongsTo(Payment, {
       name: 'idStatus',
       allowNull: false,
       field: 'id_status'
+    }
+  }),
+  Order.belongsTo(Address, {
+    as: 'address',
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+    foreignKey: {
+      name: 'idAdress',
+      allowNull: false,
+      field: 'id_address'
     }
   })
 

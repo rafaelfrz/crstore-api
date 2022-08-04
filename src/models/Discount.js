@@ -12,6 +12,7 @@ const Discount = sequelize.define(
     discountType: {
       type: DataTypes.STRING(30),
       allowNull: false,
+      field: 'discount_type'
     },
     discount: {
       type: DataTypes.INTEGER,

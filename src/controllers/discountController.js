@@ -33,7 +33,7 @@ const get = async (req, res) => {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
@@ -51,38 +51,34 @@ const persist = async (req, res) => {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
 
 const create = async (dados, res) => {
-    let { discount_type, discount, period, uses } = dados;
+    try {
+        let { discountType, discount, period, uses } = dados;
 
-    // let addressExists = await Discount.findOne({
-    //     where: {
-    //         name
-    //     }
-    // });
+        let response = await Discount.create({
+            discountType,
+            discount,
+            period,
+            uses
+        });
 
-    // if (addressExists) {
-    //     return res.status(200).send({
-    //         type: 'error',
-    //         message: `Já existe um endereço com esse CEP, ID ${addressExists.id}`
-    //     })
-    // }
-
-    let discountt = await Discount.create({
-        discount_type,
-        discount,
-        period,
-        uses
-    });
-    return res.status(200).send({
-        type: 'success',
-        message: `Categoria cadastrada com sucesso`,
-        data: discountt
-    });
+        return res.status(200).send({
+            type: 'success',
+            message: `Categoria cadastrada com sucesso`,
+            data: response
+        });
+    } catch (error) {
+        return res.status(200).send({
+            type: 'success',
+            message: `Ops! Ocorreu um erro!`,
+            data: error.message
+        })
+    }
 }
 
 const update = async (id, dados, res) => {
@@ -141,7 +137,7 @@ const destroy = async (req, res) => {
     } catch (error) {
         return res.status(200).send({
             type: 'error',
-            message: error
+            message: error.message
         });
     }
 }

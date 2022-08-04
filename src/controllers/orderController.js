@@ -1,13 +1,16 @@
 import { response } from "express";
 import Order from "../models/Order";
 import OrderProduct from "../models/OrderProduct"
+import Product from "../models/Product";
 import usersController from "./usersController"
 
 const get = async (req, res) => {
     try {
         let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
 
-        let user = await usersController.getUserByToken(req.headers.authorizantion);
+        let user = await usersController.getUserByToken(req.headers.authorization);
+
+        console.log(user)
 
         if (!user) {
             return res.status(200).send({
@@ -17,11 +20,17 @@ const get = async (req, res) => {
         };
 
         if (!id) {
-            let orders = await Order.findAll({ where: { idUser: user.id } });
+            let orders = await Order.findAll({
+                where: {
+                    idUser: user.id
+                },
+                include: ['user', 'payment', 'status', 'address']
+            });
             let response = [];
             for (let order of orders) {
-                let orderProduct = await order.getItems();
-                order.items = orderProduct;
+                let orderProducts = await order.get();
+                order = order.toJSON();
+                order.items = orderProducts;
                 response.push(order);
             }
             return res.status(200).send({
@@ -49,7 +58,7 @@ const get = async (req, res) => {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
@@ -59,10 +68,10 @@ const persist = async (req, res) => {
         let { id } = req.params;
 
         if (!id) {
-            return await create(req.body, res)
+            return await create(req, res)
         }
 
-        return await update(id, req.body, res)
+        return await update(id, req, res)
     } catch (error) {
         return res.status(200).send({
             type: 'error',
@@ -80,37 +89,60 @@ const create = async (req, res) => {
             return res.status(200).send({
                 type: 'error',
                 message: 'Ocorreu um erro ao recuperar os seus dados'
-            })
+            });
         }
 
-        let { idUser, idPayment, idStatus, products, total } = req.body;
+        let { idPayment, idStatus, idAdress, products } = req.body;
 
         let response = await Order.create({
-            idUser : user.id,
+            idUser: user.id,
             idPayment,
             idStatus,
+            idAdress,
+            total: 0.00,
         });
 
-        for (const product of products) {
-            await OrderProduct.create({
-                idOrder: response.id,
-                idProduct: products.idProducts,
-                price: products.price,
+        let total = 0;
 
-            })
+        for (const product of products) {
+
+            let productExists = await Product.findOne({
+                where: { id: product.id }
+            });
+
+            if (!productExists) {
+                await response.destroy();
+                return res.send({
+                    type: 'error',
+                    message: 'Esse produto não existe!'
+                })
+            }
+
+            let orderProduct = await OrderProduct.create({
+                idOrder: response.id,
+                idProduct: product.id,
+                amount: product.amount,
+                price: Number(productExists.price),
+                total: Number(product.amount * productExists.price).toFixed(2)
+            });
         }
+
+        let orderProducts = await response.getProducts();
+        let order = response.toJSON();
+        order.products = orderProducts;
 
         return res.status(200).send({
             type: 'success',
-            message: `Categoria cadastrada com sucesso`,
+            message: `Pedido cadastrado com sucesso`,
             data: order
         });
     } catch (error) {
+        console.log(error);
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu algum erro!',
             data: error.message
-        })
+        });
     }
 }
 
