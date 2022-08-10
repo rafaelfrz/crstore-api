@@ -17,6 +17,10 @@ const Product = sequelize.define(
     price: {
       type: DataTypes.NUMERIC(15,2),
       allowNull: false
+    },
+    imageLink: {
+       type: DataTypes.STRING(200),
+       allowNull: false
     }
   },
   {

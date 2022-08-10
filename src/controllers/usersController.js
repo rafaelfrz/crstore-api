@@ -103,18 +103,18 @@ const register = async (req, res) => {
     return res.status(200).send({
       type: 'error',
       message: 'Ops! Ocorreu um erro!',
-      data: error.message
+      data: error
     });
   }
 }
 
 const login = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    let { username, password } = req.body;
 
     let user = await User.findOne({
       where: {
-        email
+        username
       }
     });
 

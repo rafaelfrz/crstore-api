@@ -21,15 +21,15 @@ const User = sequelize.define(
     },
     cpfcnpj: {
       type: DataTypes.STRING(20),
-      allowNull: false,
+      allowNull: true,
     },
     name: {
       type: DataTypes.STRING(200),
-      allowNull: false
+      allowNull: true
     },
     phone: {
       type: DataTypes.STRING(16),
-      allowNull: false,
+      allowNull: true,
     },
     passwordHash: {
       type: DataTypes.STRING,
