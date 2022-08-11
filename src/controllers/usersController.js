@@ -2,44 +2,6 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const get = async (req, res) => {
-  try {
-    let { id } = req.params;
-
-    id = id ? id.toString().replace(/\D/g, '') : null;
-    if (!id) {
-      const response = await User.findAll({
-        order: [['id', 'ASC']]
-      });
-      return res.status(200).send({
-        type: 'success', // success, error, warning, info
-        message: 'Registros recuperados com sucesso', // mensagem para o front exibir
-        data: response // json com informações de resposta
-      });
-    }
-
-    let user = await User.findOne({
-      where: {
-        id
-      },
-    });
-
-    if (!user) {
-      return res.status(400).send({
-        type: 'error',
-        message: `Não foi encontrado usuário com o ID ${id}`,
-      });
-    }
-    return res.status(200).send(user);
-  } catch (error) {
-    return res.status(200).send({
-      type: 'error',
-      message: 'Ops! Ocorreu um erro!',
-      data: error.message
-    });
-  }
-}
-
 const getUserByToken = async (authorization) => {
   if (!authorization) {
     return null;
@@ -63,6 +25,40 @@ const getUserByToken = async (authorization) => {
   }
 
   return user;
+}
+
+
+const get = async (req, res) => {
+  try {
+      const response = await User.findAll({
+        order: [['id', 'ASC']]
+      });
+      return res.status(200).send({
+        type: 'success', // success, error, warning, info
+        message: 'Registros recuperados com sucesso', // mensagem para o front exibir
+        data: response // json com informações de resposta
+      });
+
+    let user = await User.findOne({
+      where: {
+        id
+      },
+    });
+
+    if (!user) {
+      return res.status(400).send({
+        type: 'error',
+        message: `Não foi encontrado usuário com o ID ${id}`,
+      });
+    }
+    return res.status(200).send(user);
+  } catch (error) {
+    return res.status(200).send({
+      type: 'error',
+      message: 'Ops! Ocorreu um erro!',
+      data: error.message
+    });
+  }
 }
 
 const register = async (req, res) => {
@@ -110,11 +106,11 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { username, password } = req.body;
+    let { email, password } = req.body;
 
     let user = await User.findOne({
       where: {
-        username
+        email
       }
     });
 
@@ -143,13 +139,69 @@ const login = async (req, res) => {
     return res.status(200).send({
       type: 'error',
       message: 'Ops! Ocorreu um erro!',
-      data: error
+      data: error.message
     });
+  }
+}
+
+const validateToken = async (req, res) => {
+  try {
+    const authorization = req.headers.authorization;
+
+    if (!authorization) {
+      return res.status(200).send({
+        type: 'error',
+        message: 'Token não informado'
+      })
+    }
+
+    const token = authorization.split(' ')[1] || null;
+    const decodedToken = jwt.decode(token);
+    
+    if (!decodedToken) {
+      return res.status(200).send({
+        type: 'error',
+        message: 'Não foi possível decodar o token'
+      })
+    }
+
+    if (decodedToken.exp < (Date.now() / 1000)) {
+      return res.status(200).send({
+        type: 'error',
+        message: 'Sua sessão expirou! Faça login novamente'
+      })
+    }
+
+    const user = await User.findOne({
+      where: {
+        id: decodedToken.idUser
+      }
+    })
+
+    if (!user) {
+      return res.status(200).send({
+        type: 'error',
+        message: 'Usuário não encontrado'
+      })
+    }
+
+    return res.status(200).send({
+      type: 'success',
+      message: 'Token validado com sucesso',
+      data: user.token, 
+      role: user.role
+    })
+  } catch (error) {
+    return res.status(200).send({
+      type: 'error',
+      message: 'Ocorreu um problema!',
+    })
   }
 }
 
 export default {
   get,
+  validateToken,
   getUserByToken,
   register,
   login

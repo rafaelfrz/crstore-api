@@ -59,7 +59,7 @@ const persist = async (req, res) => {
 }
 
 const create = async (dados, res) => {
-  let { name, price, idCategory } = dados;
+  let { name, price, idCategory, description, imageLink } = dados;
 
   let productExists = await Product.findOne({
     where: {
@@ -79,7 +79,9 @@ const create = async (dados, res) => {
   let product = await Product.create({
     name,
     price,
-    idCategory
+    idCategory,
+    description,
+    imageLink
   });
 
   return res.status(200).send({
@@ -113,11 +115,41 @@ const update = async (id, dados, res) => {
   });
 }
 
-const destroy = (req, res) => {
-  res.send({
-    type: 'success',
-    message: 'Voce conseguiu no DESTROY!!'
-  });
+const destroy = async (req, res) => {
+  try {
+      let { id } = req.body;
+      id = id ? id.toString().replace(/\D/g, '') : null;
+      if (!id) {
+          return res.status(200).send({
+              type: 'error',
+              message: 'Informe um ID válido para deletar o produto'
+          });
+      }
+      let product = await Product.findOne({
+          where: {
+              id
+          }
+      });
+
+      if (!product) {
+          return res.status(200).send({
+              type: 'error',
+              message: `Não foi encontrado um produto com o ID ${id}`
+          })
+      }
+
+      await product.destroy();
+      return res.status(200).send ({
+          type: 'success',
+          message: 'Produto deletado com sucesso',
+          data: product
+      })
+  } catch (error) {
+      return res.status(200).send({
+          type: 'error',
+          message: error
+      });
+  }
 }
 
 export default {

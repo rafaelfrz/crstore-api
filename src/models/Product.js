@@ -18,9 +18,14 @@ const Product = sequelize.define(
       type: DataTypes.NUMERIC(15,2),
       allowNull: false
     },
+    description: {
+    	type: DataTypes.STRING(500),
+	allowNull: false
+    },
     imageLink: {
        type: DataTypes.STRING(200),
-       allowNull: false
+       allowNull: false,
+	field: "image_link"
     }
   },
   {

@@ -133,7 +133,7 @@ const destroy = async (req, res) => {
         await category.destroy();
         return res.status(200).send ({
             type: 'success',
-            message: 'Categoria deleteada com sucesso',
+            message: 'Categoria deletada com sucesso',
             data: category
         })
     } catch (error) {

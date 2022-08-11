@@ -3,13 +3,22 @@ import usersController from "./usersController";
 
 const get = async (req, res) => {
     try {
-        let { id } = req.params;
+	let id = req.params.id ? req.params.id.toString().replace(/\D/g, '') : null;
 
-        id = id ? id.toString().replace(/\D/g, '') : null;
+	let user = await usersController.getUserByToken(req.headers.authorization);
+	
+	if(!user) {
+		return res.status(200).send({
+			type: 'error',
+			message: 'Ocorreu um erro ao recuperar seus dados'
+		})
+	}    
+
+	console.log(user)
+
         if (!id) {
-            const response = await Address.findAll({
-                order: [['id', 'ASC']]
-            });
+            let response = await Address.findOne({ where: { idUser: user.id} });
+	
             return res.status(200).send({
                 type: 'success', // success, error, warning, info
                 message: 'Registros recuperados com sucesso', // mensagem para o front exibir
@@ -17,16 +26,13 @@ const get = async (req, res) => {
             });
         }
 
-        let user = await Address.findOne({
-            where: {
-                id
-            },
-        });
+        let response = await Address.findOne({ where: { id, idUser: user.id } });
 
-        if (!user) {
+        if (!response) {
             return res.status(200).send({
                 type: 'error',
-                message: `Não foi encontrado categoria com o ID ${id}`,
+                message: `Não foi encontrado endereço com o ID ${id}`,
+		data: []
             });
         }
         return res.status(200).send(user);
@@ -34,7 +40,7 @@ const get = async (req, res) => {
         return res.status(200).send({
             type: 'error',
             message: 'Ops! Ocorreu um erro!',
-            data: error
+            data: error.message
         });
     }
 }
@@ -95,7 +101,7 @@ const update = async (id, dados, res) => {
     if (!address) {
         return res.status(200).send({
             type: 'error',
-            message: `Não foi encontrada categoria com o ID ${id}`
+            message: `Não foi encontrado endereço com o ID ${id}`
         })
     }
 
