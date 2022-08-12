@@ -14,18 +14,6 @@ const get = async (req, res) => {
 		})
 	}    
 
-	console.log(user)
-
-        if (!id) {
-            let response = await Address.findOne({ where: { idUser: user.id} });
-	
-            return res.status(200).send({
-                type: 'success', // success, error, warning, info
-                message: 'Registros recuperados com sucesso', // mensagem para o front exibir
-                data: response // json com informações de resposta
-            });
-        }
-
         let response = await Address.findOne({ where: { id, idUser: user.id } });
 
         if (!response) {

@@ -16,7 +16,7 @@ const getUserByToken = async (authorization) => {
 
   let user = await User.findOne({
     where: {
-      id: decodedToken.userId 
+      id: decodedToken.idUser
     }
   })
 
@@ -38,19 +38,6 @@ const get = async (req, res) => {
         message: 'Registros recuperados com sucesso', // mensagem para o front exibir
         data: response // json com informações de resposta
       });
-
-    let user = await User.findOne({
-      where: {
-        id
-      },
-    });
-
-    if (!user) {
-      return res.status(400).send({
-        type: 'error',
-        message: `Não foi encontrado usuário com o ID ${id}`,
-      });
-    }
     return res.status(200).send(user);
   } catch (error) {
     return res.status(200).send({
